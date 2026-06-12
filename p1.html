@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL Client GUI Sandbox</title>
+    <script src="https://cdn.jsdelivr.net/npm/alasql@4.5.1/dist/alasql.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #333333;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Navigation Header bar style typical of classic MySQL GUI Clients */
+        header {
+            background: linear-gradient(to bottom, #f6f6f6 0%, #e5e5e5 100%);
+            border-bottom: 1px solid #bcbcbc;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 35px;
+        }
+
+        .logo-area {
+            font-weight: bold;
+            color: #005f8d;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #ffffff 0%, #f2f2f2 100%);
+            border: 1px solid #707070;
+            padding: 2px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #333;
+            border-radius: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #edede8 0%, #dfdfd8 100%);
+            border-color: #3c7fb1;
+        }
+
+        .btn-execute {
+            background: linear-gradient(to bottom, #edf7ff 0%, #cde2f5 100%);
+            border-color: #4a75b5;
+            font-weight: bold;
+            color: #1c3d75;
+        }
+
+        .btn-execute:hover {
+            background: linear-gradient(to bottom, #dbeeff 0%, #b3daf5 100%);
+            border-color: #2b5596;
+        }
+
+        .btn-danger {
+            background: linear-gradient(to bottom, #fff0f0 0%, #ffe0e0 100%);
+            border-color: #b54a4a;
+            color: #751c1c;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(to bottom, #ffd6d6 0%, #ffbda0 100%);
+            border-color: #962b2b;
+        }
+
+        /* Main Workspace layout split into sidebar and console window */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left side Tree Sidebar View */
+        .sidebar {
+            width: 260px;
+            background-color: #ffffff;
+            border-right: 1px solid #bcbcbc;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            background-color: #eaf2f8;
+            padding: 6px 10px;
+            font-weight: bold;
+            border-bottom: 1px solid #bcbcbc;
+            color: #2c567a;
+        }
+
+        .tree-root {
+            padding: 5px;
+            user-select: none;
+        }
+
+        .tree-db{
+            margin-bottom:4px;
+            font-size:13px;
+            }
+
+            .tree-db-header{
+            display:flex;
+            align-items:center;
+            cursor:pointer;
+            padding:4px 6px;
+            border-radius:3px;
+            font-weight:600;
+            user-select:none;
+            }
+
+            .tree-db-header:hover{
+            background:#eef5ff;
+            }
+
+            .tree-toggle{
+            display:inline-block;
+            width:15px;
+            font-weight:bold;
+            color:#666;
+            }
+
+            .tree-folder{
+            margin-right:5px;
+            }
+
+            .tree-child{
+            margin-left:22px;
+            display:none;
+            }
+
+            .tree-child.open{
+            display:block;
+            }
+
+            .tree-section{
+            padding:3px 5px;
+            cursor:pointer;
+            color:#444;
+            }
+
+            .tree-section:hover{
+            background:#f5f5f5;
+            }
+
+            .tree-section::before{
+            content:"📂 ";
+            }
+
+            .tree-table-item{
+            padding:3px 8px;
+            margin-left:18px;
+            cursor:pointer;
+            }
+
+            .tree-table-item:hover{
+            background:#eaf3ff;
+            }
+
+            .tree-table-item::before{
+            content:"📄 ";
+            }
+
+        /* Right side main content splits up and down */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #fcfcfc;
+        }
+
+        /* Right Upper Editor Window */
+        .editor-section {
+            height: 40%;
+            border-bottom: 4px solid #bcbcbc;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+
+        .section-bar {
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #cccccc;
+            padding: 4px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #555555;
+        }
+
+        .current-db-display {
+            font-size: 12px;
+            color: #006699;
+            font-weight: normal;
+        }
+
+        .sql-editor {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            padding: 8px;
+            border: none;
+            resize: none;
+            outline: none;
+            background-color: #fafafa;
+            color: #000000;
+        }
+
+        /* Right Bottom Result Window Grid/Output logs */
+        .result-section {
+            height: 60%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-container {
+            display: flex;
+            background-color: #e1e1e1;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        .tab {
+            padding: 6px 15px;
+            cursor: pointer;
+            background-color: #dbdbdb;
+            border-right: 1px solid #bcbcbc;
+            border-bottom: 1px solid #cccccc;
+            font-weight: bold;
+            color: #555555;
+        }
+
+        .tab.active {
+            background-color: #fcfcfc;
+            border-bottom: 1px solid transparent;
+            color: #000000;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow: auto;
+            display: none;
+            background-color: #fcfcfc;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Console Log Output Style */
+        .console-log {
+            font-family: Consolas, "Courier New", monospace;
+            padding: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            background-color: #ffffff;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-success { color: #2e7d32; }
+        .log-error { color: #c62828; font-weight: bold; }
+        .log-info { color: #1565c0; }
+
+        /* Classic Data Output Grid Style */
+        .grid-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .grid-table th {
+            background-color: #eaeaea;
+            background: linear-gradient(to bottom, #f9f9f9 0%, #e1e1e1 100%);
+            color: #333333;
+            font-weight: bold;
+            padding: 5px 8px;
+            border: 1px solid #bcbcbc;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+
+        .grid-table td {
+            padding: 4px 8px;
+            border: 1px solid #d3d3d3;
+            white-space: nowrap;
+        }
+
+        .grid-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .grid-table tr:hover {
+            background-color: #ecf4fc;
+        }
+
+        .no-data {
+            padding: 20px;
+            text-align: center;
+            color: #777777;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span>🐬</span> MySQL Local Sandbox GUI Engine
+        </div>
+        <div class="top-actions">
+            <button class="btn btn-danger" onclick="resetDatabaseSchema()">⚠️ Reset to Sample Datasets</button>
+            <button class="btn btn-execute" onclick="executeSQLQuery()">⚡ Run Query (Execute)</button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <aside class="sidebar">
+            <div class="sidebar-title">Schemas / Databases</div>
+            <div class="tree-root" id="sidebar-tree">
+                </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="editor-section">
+                <div class="section-bar">
+                    <span>SQL Query Editor</span>
+                    <span class="current-db-display" id="active-db-label">Database Connected: None (Run 'USE database_name')</span>
+                </div>
+                <textarea class="sql-editor" id="query-textarea" spellcheck="false" placeholder="-- Write your MySQL queries here&#10;SELECT * FROM users;&#10;-- Or run complex joins across preloaded connected tables!"></textarea>
+            </div>
+
+            <div class="result-section">
+                <div class="tab-container">
+                    <div class="tab active" id="tab-grid-btn" onclick="switchTab('grid')">Result Grid</div>
+                    <div class="tab" id="tab-log-btn" onclick="switchTab('log')">Messages / Console Log</div>
+                </div>
+
+                <div class="tab-content active" id="tab-grid">
+                    <div id="grid-container">
+                        <div class="no-data">No query executed yet or no rows returned. Write a SELECT query and click Execute.</div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-log">
+                    <div class="console-log" id="log-container">
+                        <div class="log-entry log-info">[System Log]: Engine initialized successfully. Ready for manual/automation testing executions.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Name of active working instance session variables 
+        let currentDatabase = "";
+
+        // Core initialization sequence setup
+        window.addEventListener('DOMContentLoaded', () => {
+            initStorageEngine();
+            refreshSidebarGUI();
+            
+            // Set initial helpful query hint text block inside screen view area
+            document.getElementById('query-textarea').value = "USE ecommerce_db;\n\n-- Example Interconnected Join query across multiple preloaded tables:\nSELECT \n    u.username, \n    u.email, \n    o.id AS order_id, \n    o.order_date, \n    o.total_amount,\n    p.name AS item_purchased\nFROM users u\nJOIN orders o ON u.id = o.user_id\nJOIN order_items oi ON o.id = oi.order_id\nJOIN products p ON oi.product_id = p.id\nWHERE u.status = 'active'\nORDER BY o.total_amount DESC;";
+        });
+
+        // Initialize local dataset states or load existing data records maps out of LocalStorage
+        function initStorageEngine() {
+            if (!localStorage.getItem('mysql_sandbox_db_data')) {
+                loadPreloadedSampleDatasets();
+            } else {
+                // Restore previous session states from localStorage
+                try {
+                    const savedData = JSON.parse(localStorage.getItem('mysql_sandbox_db_data'));
+                    alasql.databases = {}; // Clear active structural references
+                    
+                    // Rehydrate AlaSQL with storage structures saved from prior configurations
+                    for (let dbName in savedData) {
+                        alasql(`CREATE DATABASE ${dbName}`);
+                        alasql.databases[dbName].tables = savedData[dbName].tables;
+                    }
+                    
+                    if(localStorage.getItem('mysql_sandbox_current_db')) {
+                        currentDatabase = localStorage.getItem('mysql_sandbox_current_db');
+                        if (alasql.databases[currentDatabase]) {
+                            alasql(`USE ${currentDatabase}`);
+                            document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
+                        } else {
+                            currentDatabase = "";
+                        }
+                    }
+                } catch(e) {
+                    console.error("Error restoring state, reloading baseline defaults", e);
+                    loadPreloadedSampleDatasets();
+                }
+            }
+        }
+
+        // Save current structural state map directly into browser local persistent memory records cache layout
+        function persistEngineState() {
+            const structuresDump = {};
+            for (let dbName in alasql.databases) {
+                // Ignore default background internal systems fields built into library core structures engine properties 
+                if (dbName === 'alasql') continue;
+                structuresDump[dbName] = {
+                    tables: alasql.databases[dbName].tables
+                };
+            }
+            localStorage.setItem('mysql_sandbox_db_data', JSON.stringify(structuresDump));
+            localStorage.setItem('mysql_sandbox_current_db', currentDatabase);
+        }
+
+        // Drop current structures completely out of tracking configurations and reset sample data tables structures
+        function resetDatabaseSchema() {
+            if(confirm("Are you sure you want to reset all databases, tables, and records to original 10-record preloaded state? All custom modifications will be lost.")) {
+                localStorage.removeItem('mysql_sandbox_db_data');
+                localStorage.removeItem('mysql_sandbox_current_db');
+                currentDatabase = "";
+                document.getElementById('active-db-label').innerText = "Database Connected: None (Run 'USE database_name')";
+                alasql.databases = { alasql: alasql.databases.alasql }; // strip references completely back to foundation standard
+                loadPreloadedSampleDatasets();
+                refreshSidebarGUI();
+                logConsoleMessage("Database successfully reset back to original testing baseline schema layouts configuration state.", "info");
+                
+                // Clear grid window view clean
+                document.getElementById('grid-container').innerHTML = '<div class="no-data">Databases reset. Enter queries and run click execute button.</div>';
+            }
+        }
+
+        // Generate baseline functional entities profiles map and sync structure trees
+        function loadPreloadedSampleDatasets() {
+            // Drop core system maps definitions arrays configurations
+            alasql.databases = { alasql: alasql.databases.alasql };
+
+            // ==========================================
+            // DATABASE 1: ecommerce_db
+            // ==========================================
+            alasql('CREATE DATABASE ecommerce_db');
+            alasql('USE ecommerce_db');
+
+            // 1. users
+            alasql('CREATE TABLE users (id INT, username STRING, email STRING, status STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO users VALUES (${i}, 'user_0${i}', 'user_0${i}@example-shop.com', '${i % 3 === 0 ? 'inactive' : 'active'}')`);
+            }
+            // 2. products
+            alasql('CREATE TABLE products (id INT, name STRING, price DECIMAL, stock INT)');
+            const prodNames = ['Gaming Mouse', 'Mechanical Keyboard', '4K Monitor', 'USB-C Hub', 'Wireless Headset', 'Webcam 1080p', 'Desk Mat RGB', 'External SSD', 'Ergonomic Chair', 'LED Strip Lights'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO products VALUES (${i}, '${prodNames[i-1]}', ${(5.5 * i * 3).toFixed(2)}, ${15 * i})`);
+            }
+            // 3. orders (Connected via user_id -> users.id)
+            alasql('CREATE TABLE orders (id INT, user_id INT, order_date STRING, total_amount DECIMAL)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO orders VALUES (100${i}, ${i}, '2026-05-0${i}', ${(25.0 * i + 12.5).toFixed(2)})`);
+            }
+            // 4. order_items (Connected via order_id -> orders.id, product_id -> products.id)
+            alasql('CREATE TABLE order_items (id INT, order_id INT, product_id INT, quantity INT)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO order_items VALUES (${i}, 100${i}, ${i}, ${i % 2 === 0 ? 2 : 1})`);
+            }
+            // 5. categories
+            alasql('CREATE TABLE categories (id INT, cat_name STRING, department STRING)');
+            const catNames = ['Electronics', 'Peripherals', 'Displays', 'Accessories', 'Audio', 'Video', 'Decor', 'Storage', 'Furniture', 'Lighting'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO categories VALUES (${i}, '${catNames[i-1]}', 'Computing')`);
+            }
+            // 6. reviews (Connected via product_id -> products.id, user_id -> users.id)
+            alasql('CREATE TABLE reviews (id INT, product_id INT, user_id INT, rating INT, comment STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO reviews VALUES (${i}, ${i}, ${i}, ${3 + (i % 3)}, 'Satisfactory item level quality profile index 0${i}')`);
+            }
+            // 7. inventory_logs (Connected via product_id -> products.id)
+            alasql('CREATE TABLE inventory_logs (log_id INT, product_id INT, adjust_qty INT, log_type STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO inventory_logs VALUES (${i}, ${i}, ${i * 2}, 'RESTOCK')`);
+            }
+            // 8. coupon_codes
+            alasql('CREATE TABLE coupon_codes (id INT, code STRING, discount_percent INT, max_uses INT)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO coupon_codes VALUES (${i}, 'SAVE${i}0PERCENT', ${i * 5}, ${i * 100})`);
+            }
+            // 9. shipping_details (Connected via order_id -> orders.id)
+            alasql('CREATE TABLE shipping_details (id INT, order_id INT, carrier STRING, tracking_no STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO shipping_details VALUES (${i}, 100${i}, '${i % 2 === 0 ? 'FedEx' : 'DHL'}', 'TRACK990234${i}')`);
+            }
+            // 10. payment_records (Connected via order_id -> orders.id)
+            alasql('CREATE TABLE payment_records (id INT, order_id INT, type STRING, transaction_status STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO payment_records VALUES (${i}, 100${i}, '${i % 2 === 0 ? 'CREDIT_CARD' : 'PAYPAL'}', 'COMPLETED')`);
+            }
+
+
+            // ==========================================
+            // DATABASE 2: company_db
+            // ==========================================
+            alasql('CREATE DATABASE company_db');
+            alasql('USE company_db');
+
+            // 1. employees
+            alasql('CREATE TABLE employees (id INT, name STRING, position STRING, salary DECIMAL, dept_id INT)');
+            const jobs = ['Junior Engineer', 'Senior Engineer', 'QA Specialist', 'Automation Tester', 'Team Lead', 'Product Manager', 'UI Designer', 'DevOps Specialist', 'HR Partner', 'Director'];
+            const names = ['John Doe', 'Jane Smith', 'Alex Green', 'Emily White', 'Michael Brown', 'Sarah Davis', 'David Miller', 'James Wilson', 'Jessica Taylor', 'Robert Moore'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO employees VALUES (${i}, '${names[i-1]}', '${jobs[i-1]}', ${45000.00 + (i * 7000)}, ${10 + i})`);
+            }
+            // 2. departments (Connected via dept_id matching employees.dept_id or linking structures)
+            alasql('CREATE TABLE departments (id INT, dept_name STRING, manager STRING)');
+            const depts = ['Engineering', 'QA Core', 'Product Mgmt', 'Design Studio', 'DevOps Infrastructure', 'Human Resources', 'Operations', 'Finance Tech', 'Legal Compliance', 'Executive Suite'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO departments VALUES (${10 + i}, '${depts[i-1]}', '${names[10-i]}')`);
+            }
+            // 3. projects
+            alasql('CREATE TABLE projects (id INT, name STRING, budget DECIMAL, status STRING)');
+            const projs = ['Alpha Core', 'Beta Release', 'Delta Migration', 'Omega Automation', 'Sigma Analytics', 'Epsilon Interface', 'Zeta Infrastructure', 'Gamma Payroll', 'Theta Compliance', 'Titan Dashboard'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO projects VALUES (50${i}, '${projs[i-1]}', ${50000 * i}, '${i % 4 === 0 ? 'Completed' : 'Active'}')`);
+            }
+            // 4. project_assignments (Connected via emp_id -> employees.id, proj_id -> projects.id)
+            alasql('CREATE TABLE project_assignments (id INT, emp_id INT, proj_id INT, hours_allocated INT)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO project_assignments VALUES (${i}, ${i}, 50${i}, ${20 + i})`);
+            }
+            // 5. office_locations
+            alasql('CREATE TABLE office_locations (id INT, city STRING, country STRING, capacity INT)');
+            const cities = ['New York', 'San Francisco', 'London', 'Berlin', 'Bangalore', 'Tokyo', 'Sydney', 'Toronto', 'Paris', 'Singapore'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO office_locations VALUES (${i}, '${cities[i-1]}', 'Global Offices', ${50 * i})`);
+            }
+            // 6. salaries_logs (Connected via emp_id -> employees.id)
+            alasql('CREATE TABLE salaries_logs (id INT, emp_id INT, payment_date STRING, bonus DECIMAL)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO salaries_logs VALUES (${i}, ${i}, '2026-05-31', ${(250 * i).toFixed(2)})`);
+            }
+            // 7. client_companies
+            alasql('CREATE TABLE client_companies (id INT, client_name STRING, industry STRING, account_manager STRING)');
+            const clients = ['Acme Corp', 'Stark Industries', 'Wayne Ent', 'Initech LLC', 'Cyberdyne Systems', 'Umbrella Corp', 'Tyrell Systems', 'Hooli Inc', 'Globex', 'Soylent Green'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO client_companies VALUES (${i}, '${clients[i-1]}', 'Technology Solutions', '${names[i-1]}')`);
+            }
+            // 8. employee_benefits (Connected via emp_id -> employees.id)
+            alasql('CREATE TABLE employee_benefits (id INT, emp_id INT, health_plan STRING, remote_allowed STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO employee_benefits VALUES (${i}, ${i}, 'Premium Plan Tier-${i}', '${i % 2 === 0 ? 'YES' : 'NO'}')`);
+            }
+            // 9. timesheets (Connected via emp_id -> employees.id)
+            alasql('CREATE TABLE timesheets (id INT, emp_id INT, week_number INT, status STRING)');
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO timesheets VALUES (${i}, ${i}, 22, 'APPROVED')`);
+            }
+            // 10. equipment_inventory (Connected via assigned_to_emp_id -> employees.id)
+            alasql('CREATE TABLE equipment_inventory (id INT, item_type STRING, asset_tag STRING, assigned_to_emp_id INT)');
+            const items = ['MacBook Pro', 'ThinkPad T14', 'Dell UltraSharp', 'iPad Pro', 'iPhone 15 Pro', 'Logitech MX', 'YubiKey 5C', 'Thunderbolt Dock', 'Varidesk Frame', 'Bose 700 NC'];
+            for(let i=1; i<=10; i++) {
+                alasql(`INSERT INTO equipment_inventory VALUES (${i}, '${items[i-1]}', 'ASSET-TAG-990${i}', ${i})`);
+            }
+
+            // Set a standard baseline database default reference configuration selection mapping state initially 
+            currentDatabase = "ecommerce_db";
+            alasql('USE ecommerce_db');
+            
+            persistEngineState();
+        }
+
+        // GUI Navigation Tree Builders updates dynamic schema arrays loops
+        function refreshSidebarGUI(){
+
+            const sidebar=document.getElementById("sidebar-tree");
+
+            sidebar.innerHTML="";
+
+            Object.keys(alasql.databases).forEach(dbName=>{
+
+            if(dbName==="alasql") return;
+
+            const db=alasql.databases[dbName];
+
+            const wrap=document.createElement("div");
+
+            wrap.className="tree-db";
+
+            const head=document.createElement("div");
+
+            head.className="tree-db-header";
+
+            head.innerHTML=`
+            <span class="tree-toggle">+</span>
+            <span class="tree-folder">🗄️</span>
+            ${dbName}
+            `;
+
+            const child=document.createElement("div");
+
+            child.className="tree-child";
+
+            head.onclick=function(){
+
+            child.classList.toggle("open");
+
+            head.querySelector(".tree-toggle").innerHTML=
+            child.classList.contains("open")?"-":"+";
+
+            };
+
+            wrap.appendChild(head);
+
+            const tables=document.createElement("div");
+
+            tables.className="tree-section";
+
+            tables.innerHTML="Tables";
+
+            child.appendChild(tables);
+
+            if(db.tables){
+
+            Object.keys(db.tables).forEach(t=>{
+
+            const item=document.createElement("div");
+
+            item.className="tree-table-item";
+
+            item.innerHTML=t;
+
+            item.onclick=function(e){
+
+            e.stopPropagation();
+
+            document.getElementById("query-textarea").value=
+            `USE ${dbName};
+
+            SELECT * FROM ${t};`;
+
+            executeSQLQuery();
+
+            };
+
+            child.appendChild(item);
+
+            });
+
+            }
+
+            const views=document.createElement("div");
+
+            views.className="tree-section";
+
+            views.innerHTML="Views";
+
+            child.appendChild(views);
+
+            const procedures=document.createElement("div");
+
+            procedures.className="tree-section";
+
+            procedures.innerHTML="Procedures";
+
+            child.appendChild(procedures);
+
+            const functions=document.createElement("div");
+
+            functions.className="tree-section";
+
+            functions.innerHTML="Functions";
+
+            child.appendChild(functions);
+
+            wrap.appendChild(child);
+
+            sidebar.appendChild(wrap);
+
+            });
+
+            }
+
+        // Handle GUI sidebar selection clicks cleanly updating system state tracking configurations references 
+        function selectDatabaseFromGUI(dbName) {
+            try {
+                alasql(`USE ${dbName}`);
+                currentDatabase = dbName;
+                document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
+                refreshSidebarGUI();
+                logConsoleMessage(`Switched database tracking reference target to: ${dbName}`, "info");
+                persistEngineState();
+            } catch(e) {
+                logConsoleMessage(`Error switching to database context ${dbName}: ${e.message}`, "error");
+            }
+        }
+
+        // Global query console output append logging function
+        function logConsoleMessage(message, type = "success") {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerText = `[${timestamp}] - ${message}`;
+            
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Tab selection click handler views tracking layouts toggler
+        function switchTab(tabType) {
+            document.getElementById('tab-grid-btn').classList.remove('active');
+            document.getElementById('tab-log-btn').classList.remove('active');
+            document.getElementById('tab-grid').classList.remove('active');
+            document.getElementById('tab-log').classList.remove('active');
+
+            if (tabType === 'grid') {
+                document.getElementById('tab-grid-btn').classList.add('active');
+                document.getElementById('tab-grid').classList.add('active');
+            } else {
+                document.getElementById('tab-log-btn').classList.add('active');
+                document.getElementById('tab-log').classList.add('active');
+            }
+        }
+
+        // Main parser/executor engine execution controller route tracking
+        function executeSQLQuery() {
+            const rawInput = document.getElementById('query-textarea').value.trim();
+            if (!rawInput) {
+                alert("Please enter an SQL statement to run.");
+                return;
+            }
+
+            // Split the input commands into separate individual statements to support multiple batch executions sequentially
+            // Splitting logic respects nested strings containing semicolons safely
+            const queries = rawInput.split(/;(?=(?:[^']*'[^']*')*[^']*$)/).map(q => q.trim()).filter(q => q.length > 0);
+            
+            let lastResult = null;
+            let executionErrorOccurred = false;
+            let totalStatementsExecuted = 0;
+
+            // Loop and run all separate individual string statements through browser storage tracking references maps 
+            for(let i = 0; i < queries.length; i++) {
+                let sqlStatement = queries[i];
+                
+                // Track if user explicitly requested switching targeted execution environments mapping rules via query console commands 
+                const useDbMatch = sqlStatement.match(/^USE\s+(\w+)/i);
+                if (useDbMatch) {
+                    const targetDb = useDbMatch[1];
+                    if (alasql.databases[targetDb]) {
+                        currentDatabase = targetDb;
+                        document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
+                    }
+                }
+
+                try {
+                    // Send instruction directly down down into running memory profile layout configuration map elements tracker arrays blocks
+                    lastResult = alasql(sqlStatement);
+                    totalStatementsExecuted++;
+                    
+                    // Format message output log profiles feedback configurations elements mappings arrays values cleanly 
+                    if (Array.isArray(lastResult)) {
+                        logConsoleMessage(`Query SQL index [${totalStatementsExecuted}] ran successfully: Returned ${lastResult.length} record row entries.`, "success");
+                    } else {
+                        logConsoleMessage(`Statement SQL index [${totalStatementsExecuted}] completed successfully. Status response: ${JSON.stringify(lastResult)}`, "success");
+                    }
+                } catch(error) {
+                    logConsoleMessage(`Error running statement index [${i+1}] ("${sqlStatement.substring(0, 40)}..."): ${error.message}`, "error");
+                    executionErrorOccurred = true;
+                    switchTab('log'); // Switch view immediately over into data processing messages console logging maps view so tester spots layout anomalies fast
+                    break; 
+                }
+            }
+
+            // Sync structural modification outcomes directly to browser long-term persistence structures store caches updates
+            persistEngineState();
+            refreshSidebarGUI();
+
+            if (!executionErrorOccurred) {
+                // If the last query run was a SELECT statement, display the results grid, otherwise show status 
+                const cleanLastQuery = queries[queries.length - 1].toLowerCase();
+                if(cleanLastQuery.includes('select') || cleanLastQuery.includes('show') || cleanLastQuery.includes('explain')) {
+                    renderResultGrid(lastResult);
+                    switchTab('grid');
+                } else {
+                    // Non-select mutation statements response confirmation feedback 
+                    document.getElementById('grid-container').innerHTML = `
+                        <div class="no-data" style="color: #2e7d32; font-weight: bold;">
+                            ✅ Query execution tracking complete. All ${totalStatementsExecuted} statement batches finalized successfully.<br>
+                            <span style="font-size: 11px; font-weight: normal; color: #555;">Check Messages Log tab for technical telemetry indicators.</span>
+                        </div>`;
+                    switchTab('log');
+                }
+            }
+        }
+
+        // Render dataset result objects tables inside UI output viewing target placeholder layout
+        function renderResultGrid(dataArray) {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+
+            if (!dataArray || !Array.isArray(dataArray) || dataArray.length === 0) {
+                container.innerHTML = '<div class="no-data">Query executed successfully, but returned 0 data record rows response rows.</div>';
+                return;
+            }
+
+            // Extract all keys present inside properties collections mapped to trace out correct column definitions 
+            const columns = Object.keys(dataArray[0]);
+
+            const table = document.createElement('table');
+            table.className = 'grid-table';
+
+            // Generate header rows mapping track
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            columns.forEach(colName => {
+                const th = document.createElement('th');
+                th.innerText = colName;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Generate data records cell body layout loops mapping track
+            const tbody = document.createElement('tbody');
+            dataArray.forEach(rowDataObj => {
+                const tr = document.createElement('tr');
+                columns.forEach(colName => {
+                    const td = document.createElement('td');
+                    let val = rowDataObj[colName];
+                    
+                    // Pretty format empty values elements profiles configurations properties cleanly
+                    if (val === null || val === undefined) {
+                        td.innerHTML = '<span style="color: #aaa; font-style: italic;">NULL</span>';
+                    } else {
+                        td.innerText = val.toString();
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+    </script>
+</body>
+</html>
