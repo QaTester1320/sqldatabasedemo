@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MySQL Client GUI Sandbox</title>
     <script src="https://cdn.jsdelivr.net/npm/alasql@4.5.1/dist/alasql.min.js"></script>
-    <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -132,9 +126,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-
         .tree-db{
             margin-bottom:4px;
             font-size:13px;
-            }
+        }
 
-            .tree-db-header{
+        .tree-db-header{
             display:flex;
             align-items:center;
             cursor:pointer;
@@ -142,101 +136,84 @@ href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-
             border-radius:3px;
             font-weight:600;
             user-select:none;
-            }
+        }
 
-            .tree-db-header:hover{
+        .tree-db-header:hover{
             background:#eef5ff;
-            }
+        }
 
-            .tree-db-header.active{
+        .tree-db-header.active{
+            background:#cfe8ff;
+            color:#005ea6;
+            font-weight:bold;
+            border:1px solid #7bb7ff;
+        }
 
-                background:#cfe8ff;
+        .tree-table-item.active{
+            background:#dff1ff;
+            font-weight:bold;
+            color:#005ea6;
+        }
 
-                color:#005ea6;
+        .tree-section{
+            font-weight:bold;
+            color:#444;
+            margin-top:4px;
+            margin-bottom:2px;
+        }
 
-                font-weight:bold;
+        .tree-child{
+            padding-left:12px;
+            border-left:1px dotted #cfcfcf;
+        }
 
-                border:1px solid #7bb7ff;
-
-                }
-
-                .tree-table-item.active{
-
-                background:#dff1ff;
-
-                font-weight:bold;
-
-                color:#005ea6;
-
-                }
-
-                .tree-section{
-
-                font-weight:bold;
-
-                color:#444;
-
-                margin-top:4px;
-
-                margin-bottom:2px;
-
-                }
-
-                .tree-child{
-
-                padding-left:12px;
-
-                border-left:1px dotted #cfcfcf;
-
-                }
-
-            .tree-toggle{
+        .tree-toggle{
             display:inline-block;
             width:15px;
             font-weight:bold;
             color:#666;
-            }
+        }
 
-            .tree-folder{
+        .tree-folder{
             margin-right:5px;
-            }
+        }
 
-            .tree-child{
+        .tree-child{
             margin-left:22px;
             display:none;
-            }
+        }
 
-            .tree-child.open{
+        .tree-child.open{
             display:block;
-            }
+        }
 
-            .tree-section{
+        .tree-section{
             padding:3px 5px;
             cursor:pointer;
             color:#444;
-            }
+        }
 
-            .tree-section:hover{
+        .tree-section:hover{
             background:#f5f5f5;
-            }
+        }
 
-            .tree-section::before{
+        .tree-section::before{
             content:"📂 ";
-            }
+        }
 
-            .tree-table-item{
+        .tree-table-item{
             padding:3px 8px;
             margin-left:18px;
             cursor:pointer;
-            }
+        }
 
-            .tree-table-item:hover{
+        .tree-table-item:hover{
             background:#eaf3ff;
-            }
+        }
 
-            .tree-table-item::before{
+        .tree-table-item::before{
             content:"📄 ";
-            }
+        }
 
         /* Right side main content splits up and down */
         .main-content {
@@ -288,24 +265,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-
         }
 
         .CodeMirror{
+            height:100%;
+            font-size:14px;
+            font-family:"Courier New",monospace;
+            border:none;
+            background:#fafafa;
+        }
 
-height:100%;
-
-font-size:14px;
-
-font-family:"Courier New",monospace;
-
-border:none;
-
-background:#fafafa;
-
-}
-
-.CodeMirror-focused{
-
-outline:none;
-
-}
+        .CodeMirror-focused{
+            outline:none;
+        }
 
         /* Right Bottom Result Window Grid/Output logs */
         .result-section {
@@ -424,8 +393,7 @@ outline:none;
     <div class="workspace">
         <aside class="sidebar">
             <div class="sidebar-title">Schemas / Databases</div>
-            <div class="tree-root" id="sidebar-tree">
-                </div>
+            <div class="tree-root" id="sidebar-tree"></div>
         </aside>
 
         <main class="main-content">
@@ -459,14 +427,10 @@ outline:none;
     </div>
 
     <script>
-        // Name of active working instance session variables 
-      let currentDatabase="";
-
+        let currentDatabase="";
         let currentTable="";
         let editor;
-
         let queryHistory=[];
-
         let historyIndex=-1;
 
         // Core initialization sequence setup
@@ -474,69 +438,53 @@ outline:none;
             initStorageEngine();
             refreshSidebarGUI();
             
-            // Set initial helpful query hint text block inside screen view area
-            document.getElementById('query-textarea').value = "USE ecommerce_db;\n\n-- Example Interconnected Join query across multiple preloaded tables:\nSELECT \n    u.username, \n    u.email, \n    o.id AS order_id, \n    o.order_date, \n    o.total_amount,\n    p.name AS item_purchased\nFROM users u\nJOIN orders o ON u.id = o.user_id\nJOIN order_items oi ON o.id = oi.order_id\nJOIN products p ON oi.product_id = p.id\nWHERE u.status = 'active'\nORDER BY o.total_amount DESC;";
-            document.addEventListener("keydown",function(e){
-
-                if(e.key==="F5"){
-
-                    e.preventDefault();
-
-                    executeSQLQuery();
-
-                }
-
+            // Initialize CodeMirror ONLY ONCE right here when DOM is loaded
+            editor = CodeMirror.fromTextArea(document.getElementById("query-textarea"), {
+                mode: "text/x-mysql",
+                lineNumbers: true,
+                indentWithTabs: true,
+                smartIndent: true,
+                matchBrackets: true,
+                lineWrapping: true
             });
-            document.getElementById("query-textarea").addEventListener("keydown",function(e){
 
-                if(e.ctrlKey && e.key==="Enter"){
+            // Set initial query with descriptive, completely unique table aliases (usr, ord, ori, prod)
+            const defaultQuery = "USE ecommerce_db;\n\n-- Example Interconnected Join query across multiple preloaded tables:\nSELECT \n    usr.username, \n    usr.email, \n    ord.id AS order_id, \n    ord.order_date, \n    ord.total_amount,\n    prod.name AS item_purchased\nFROM users usr\nJOIN orders ord ON usr.id = ord.user_id\nJOIN order_items ori ON ord.id = ori.order_id\nJOIN products prod ON ori.product_id = prod.id\nWHERE usr.status = 'active'\nORDER BY ord.total_amount DESC;";
+            editor.setValue(defaultQuery);
 
-                e.preventDefault();
+            document.addEventListener("keydown", function(e) {
+                if(e.key==="F5") {
+                    e.preventDefault();
+                    executeSQLQuery();
+                }
+            });
 
-                executeSQLQuery();
-
+            // Listen for Ctrl+Enter directly on the CodeMirror container wrapper environment
+            editor.on("keydown", function(cm, e) {
+                if(e.ctrlKey && e.key === "Enter") {
+                    e.preventDefault();
+                    executeSQLQuery();
                 }
 
-                });
-                document.getElementById("query-textarea")
+                if(e.key === "ArrowUp") {
+                    if(historyIndex > 0) {
+                        historyIndex--;
+                        editor.setValue(queryHistory[historyIndex]);
+                        e.preventDefault();
+                    }
+                }
 
-                    .addEventListener("keydown",function(e){
-
-                    if(e.key==="ArrowUp"){
-
-                    if(historyIndex>0){
-
-                    historyIndex--;
-
-                    this.value=queryHistory[historyIndex];
-
+                if(e.key === "ArrowDown") {
+                    if(historyIndex < queryHistory.length - 1) {
+                        historyIndex++;
+                        editor.setValue(queryHistory[historyIndex]);
+                    } else {
+                        historyIndex = queryHistory.length;
+                        editor.setValue("");
+                    }
                     e.preventDefault();
-
-                    }
-
-                    }
-
-                    if(e.key==="ArrowDown"){
-
-                    if(historyIndex<queryHistory.length-1){
-
-                    historyIndex++;
-
-                    this.value=queryHistory[historyIndex];
-
-                    }else{
-
-                    historyIndex=queryHistory.length;
-
-                    this.value="";
-
-                    }
-
-                    e.preventDefault();
-
-                    }
-
-                    });
+                }
+            });
         });
 
         // Initialize local dataset states or load existing data records maps out of LocalStorage
@@ -544,12 +492,10 @@ outline:none;
             if (!localStorage.getItem('mysql_sandbox_db_data')) {
                 loadPreloadedSampleDatasets();
             } else {
-                // Restore previous session states from localStorage
                 try {
                     const savedData = JSON.parse(localStorage.getItem('mysql_sandbox_db_data'));
-                    alasql.databases = {}; // Clear active structural references
+                    alasql.databases = {}; 
                     
-                    // Rehydrate AlaSQL with storage structures saved from prior configurations
                     for (let dbName in savedData) {
                         alasql(`CREATE DATABASE ${dbName}`);
                         alasql.databases[dbName].tables = savedData[dbName].tables;
@@ -575,7 +521,6 @@ outline:none;
         function persistEngineState() {
             const structuresDump = {};
             for (let dbName in alasql.databases) {
-                // Ignore default background internal systems fields built into library core structures engine properties 
                 if (dbName === 'alasql') continue;
                 structuresDump[dbName] = {
                     tables: alasql.databases[dbName].tables
@@ -592,146 +537,136 @@ outline:none;
                 localStorage.removeItem('mysql_sandbox_current_db');
                 currentDatabase = "";
                 document.getElementById('active-db-label').innerText = "Database Connected: None (Run 'USE database_name')";
-                alasql.databases = { alasql: alasql.databases.alasql }; // strip references completely back to foundation standard
+                alasql.databases = { alasql: alasql.databases.alasql }; 
                 loadPreloadedSampleDatasets();
                 refreshSidebarGUI();
                 logConsoleMessage("Database successfully reset back to original testing baseline schema layouts configuration state.", "info");
                 
-                // Clear grid window view clean
                 document.getElementById('grid-container').innerHTML = '<div class="no-data">Databases reset. Enter queries and run click execute button.</div>';
             }
         }
 
         // Generate baseline functional entities profiles map and sync structure trees
         function loadPreloadedSampleDatasets() {
-            // Drop core system maps definitions arrays configurations
             alasql.databases = { alasql: alasql.databases.alasql };
 
-            // ==========================================
             // DATABASE 1: ecommerce_db
-            // ==========================================
             alasql('CREATE DATABASE ecommerce_db');
             alasql('USE ecommerce_db');
 
-            // 1. users
             alasql('CREATE TABLE users (id INT, username STRING, email STRING, status STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO users VALUES (${i}, 'user_0${i}', 'user_0${i}@example-shop.com', '${i % 3 === 0 ? 'inactive' : 'active'}')`);
             }
-            // 2. products
+
             alasql('CREATE TABLE products (id INT, name STRING, price DECIMAL, stock INT)');
             const prodNames = ['Gaming Mouse', 'Mechanical Keyboard', '4K Monitor', 'USB-C Hub', 'Wireless Headset', 'Webcam 1080p', 'Desk Mat RGB', 'External SSD', 'Ergonomic Chair', 'LED Strip Lights'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO products VALUES (${i}, '${prodNames[i-1]}', ${(5.5 * i * 3).toFixed(2)}, ${15 * i})`);
             }
-            // 3. orders (Connected via user_id -> users.id)
+
             alasql('CREATE TABLE orders (id INT, user_id INT, order_date STRING, total_amount DECIMAL)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO orders VALUES (100${i}, ${i}, '2026-05-0${i}', ${(25.0 * i + 12.5).toFixed(2)})`);
             }
-            // 4. order_items (Connected via order_id -> orders.id, product_id -> products.id)
+
             alasql('CREATE TABLE order_items (id INT, order_id INT, product_id INT, quantity INT)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO order_items VALUES (${i}, 100${i}, ${i}, ${i % 2 === 0 ? 2 : 1})`);
             }
-            // 5. categories
+
             alasql('CREATE TABLE categories (id INT, cat_name STRING, department STRING)');
             const catNames = ['Electronics', 'Peripherals', 'Displays', 'Accessories', 'Audio', 'Video', 'Decor', 'Storage', 'Furniture', 'Lighting'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO categories VALUES (${i}, '${catNames[i-1]}', 'Computing')`);
             }
-            // 6. reviews (Connected via product_id -> products.id, user_id -> users.id)
+
             alasql('CREATE TABLE reviews (id INT, product_id INT, user_id INT, rating INT, comment STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO reviews VALUES (${i}, ${i}, ${i}, ${3 + (i % 3)}, 'Satisfactory item level quality profile index 0${i}')`);
             }
-            // 7. inventory_logs (Connected via product_id -> products.id)
+
             alasql('CREATE TABLE inventory_logs (log_id INT, product_id INT, adjust_qty INT, log_type STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO inventory_logs VALUES (${i}, ${i}, ${i * 2}, 'RESTOCK')`);
             }
-            // 8. coupon_codes
+
             alasql('CREATE TABLE coupon_codes (id INT, code STRING, discount_percent INT, max_uses INT)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO coupon_codes VALUES (${i}, 'SAVE${i}0PERCENT', ${i * 5}, ${i * 100})`);
             }
-            // 9. shipping_details (Connected via order_id -> orders.id)
+
             alasql('CREATE TABLE shipping_details (id INT, order_id INT, carrier STRING, tracking_no STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO shipping_details VALUES (${i}, 100${i}, '${i % 2 === 0 ? 'FedEx' : 'DHL'}', 'TRACK990234${i}')`);
             }
-            // 10. payment_records (Connected via order_id -> orders.id)
+
             alasql('CREATE TABLE payment_records (id INT, order_id INT, type STRING, transaction_status STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO payment_records VALUES (${i}, 100${i}, '${i % 2 === 0 ? 'CREDIT_CARD' : 'PAYPAL'}', 'COMPLETED')`);
             }
 
-
-            // ==========================================
             // DATABASE 2: company_db
-            // ==========================================
             alasql('CREATE DATABASE company_db');
             alasql('USE company_db');
 
-            // 1. employees
             alasql('CREATE TABLE employees (id INT, name STRING, position STRING, salary DECIMAL, dept_id INT)');
             const jobs = ['Junior Engineer', 'Senior Engineer', 'QA Specialist', 'Automation Tester', 'Team Lead', 'Product Manager', 'UI Designer', 'DevOps Specialist', 'HR Partner', 'Director'];
             const names = ['John Doe', 'Jane Smith', 'Alex Green', 'Emily White', 'Michael Brown', 'Sarah Davis', 'David Miller', 'James Wilson', 'Jessica Taylor', 'Robert Moore'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO employees VALUES (${i}, '${names[i-1]}', '${jobs[i-1]}', ${45000.00 + (i * 7000)}, ${10 + i})`);
             }
-            // 2. departments (Connected via dept_id matching employees.dept_id or linking structures)
+
             alasql('CREATE TABLE departments (id INT, dept_name STRING, manager STRING)');
             const depts = ['Engineering', 'QA Core', 'Product Mgmt', 'Design Studio', 'DevOps Infrastructure', 'Human Resources', 'Operations', 'Finance Tech', 'Legal Compliance', 'Executive Suite'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO departments VALUES (${10 + i}, '${depts[i-1]}', '${names[10-i]}')`);
             }
-            // 3. projects
+
             alasql('CREATE TABLE projects (id INT, name STRING, budget DECIMAL, status STRING)');
             const projs = ['Alpha Core', 'Beta Release', 'Delta Migration', 'Omega Automation', 'Sigma Analytics', 'Epsilon Interface', 'Zeta Infrastructure', 'Gamma Payroll', 'Theta Compliance', 'Titan Dashboard'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO projects VALUES (50${i}, '${projs[i-1]}', ${50000 * i}, '${i % 4 === 0 ? 'Completed' : 'Active'}')`);
             }
-            // 4. project_assignments (Connected via emp_id -> employees.id, proj_id -> projects.id)
+
             alasql('CREATE TABLE project_assignments (id INT, emp_id INT, proj_id INT, hours_allocated INT)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO project_assignments VALUES (${i}, ${i}, 50${i}, ${20 + i})`);
             }
-            // 5. office_locations
+
             alasql('CREATE TABLE office_locations (id INT, city STRING, country STRING, capacity INT)');
             const cities = ['New York', 'San Francisco', 'London', 'Berlin', 'Bangalore', 'Tokyo', 'Sydney', 'Toronto', 'Paris', 'Singapore'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO office_locations VALUES (${i}, '${cities[i-1]}', 'Global Offices', ${50 * i})`);
             }
-            // 6. salaries_logs (Connected via emp_id -> employees.id)
+
             alasql('CREATE TABLE salaries_logs (id INT, emp_id INT, payment_date STRING, bonus DECIMAL)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO salaries_logs VALUES (${i}, ${i}, '2026-05-31', ${(250 * i).toFixed(2)})`);
             }
-            // 7. client_companies
+
             alasql('CREATE TABLE client_companies (id INT, client_name STRING, industry STRING, account_manager STRING)');
             const clients = ['Acme Corp', 'Stark Industries', 'Wayne Ent', 'Initech LLC', 'Cyberdyne Systems', 'Umbrella Corp', 'Tyrell Systems', 'Hooli Inc', 'Globex', 'Soylent Green'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO client_companies VALUES (${i}, '${clients[i-1]}', 'Technology Solutions', '${names[i-1]}')`);
             }
-            // 8. employee_benefits (Connected via emp_id -> employees.id)
+
             alasql('CREATE TABLE employee_benefits (id INT, emp_id INT, health_plan STRING, remote_allowed STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO employee_benefits VALUES (${i}, ${i}, 'Premium Plan Tier-${i}', '${i % 2 === 0 ? 'YES' : 'NO'}')`);
             }
-            // 9. timesheets (Connected via emp_id -> employees.id)
+
             alasql('CREATE TABLE timesheets (id INT, emp_id INT, week_number INT, status STRING)');
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO timesheets VALUES (${i}, ${i}, 22, 'APPROVED')`);
             }
-            // 10. equipment_inventory (Connected via assigned_to_emp_id -> employees.id)
+
             alasql('CREATE TABLE equipment_inventory (id INT, item_type STRING, asset_tag STRING, assigned_to_emp_id INT)');
             const items = ['MacBook Pro', 'ThinkPad T14', 'Dell UltraSharp', 'iPad Pro', 'iPhone 15 Pro', 'Logitech MX', 'YubiKey 5C', 'Thunderbolt Dock', 'Varidesk Frame', 'Bose 700 NC'];
             for(let i=1; i<=10; i++) {
                 alasql(`INSERT INTO equipment_inventory VALUES (${i}, '${items[i-1]}', 'ASSET-TAG-990${i}', ${i})`);
             }
 
-            // Set a standard baseline database default reference configuration selection mapping state initially 
             currentDatabase = "ecommerce_db";
             alasql('USE ecommerce_db');
             
@@ -741,163 +676,100 @@ outline:none;
         // GUI Navigation Tree Builders updates dynamic schema arrays loops
         function refreshSidebarGUI(){
             let totalTables=0;
-
             const sidebar=document.getElementById("sidebar-tree");
-
             sidebar.innerHTML="";
 
             Object.keys(alasql.databases).forEach(dbName=>{
+                if(dbName==="alasql") return;
+                const db=alasql.databases[dbName];
+                const wrap=document.createElement("div");
+                wrap.className="tree-db";
 
-            if(dbName==="alasql") return;
-
-            const db=alasql.databases[dbName];
-
-            const wrap=document.createElement("div");
-
-            wrap.className="tree-db";
-
-            const head=document.createElement("div");
-
-            head.className="tree-db-header";
-            if(dbName===currentDatabase){
-
-                head.classList.add("active");
-
+                const head=document.createElement("div");
+                head.className="tree-db-header";
+                if(dbName===currentDatabase){
+                    head.classList.add("active");
                 }
 
-            head.innerHTML=`
-            <span class="tree-toggle">${dbName===currentDatabase?"-":"+"}</span>
-            <span class="tree-folder">🗄️</span>
-            ${dbName}
-            `;
+                head.innerHTML=`
+                <span class="tree-toggle">${dbName===currentDatabase?"-":"+"}</span>
+                <span class="tree-folder">🗄️</span>
+                ${dbName}
+                `;
 
-            const child=document.createElement("div");
-
-            child.className="tree-child";
-
-            if(dbName===currentDatabase){
-
-            child.classList.add("open");
-
-            }
-
-            head.onclick=function(){
-
-            child.classList.toggle("open");
-
-            head.querySelector(".tree-toggle").innerHTML=
-            child.classList.contains("open")?"-":"+";
-
-            };
-
-            wrap.appendChild(head);
-
-            const tables=document.createElement("div");
-
-            tables.className="tree-section";
-
-            tables.innerHTML="Tables";
-
-            child.appendChild(tables);
-
-            if(db.tables){
-
-            Object.keys(db.tables).forEach(t=>{
-                totalTables++;
-
-            const item=document.createElement("div");
-
-            item.className="tree-table-item";
-
-            if(currentTable===t){
-
-                item.classList.add("active");
-
+                const child=document.createElement("div");
+                child.className="tree-child";
+                if(dbName===currentDatabase){
+                    child.classList.add("open");
                 }
 
-            item.innerHTML=t;
-
-            item.onclick=function(e){
-
-            e.stopPropagation();
-            currentDatabase=dbName;
-
-            currentTable=t;
-
-            document.getElementById("active-db-label").innerText=
-
-            `Database Connected: ${dbName}`;
-
-            persistEngineState();
-
-            document.getElementById("query-textarea").value=
-            `USE ${dbName};
-
-            SELECT * FROM ${t};`;
-
-            executeSQLQuery();
-
-            };
-
-            item.ondblclick=function(e){
-
-                e.stopPropagation();
-
-                currentDatabase=dbName;
-
-                currentTable=t;
-
-                document.getElementById("query-textarea").value=
-                `USE ${dbName};
-
-                SELECT * FROM ${t};`;
-
-                executeSQLQuery();
-
+                head.onclick=function(){
+                    child.classList.toggle("open");
+                    head.querySelector(".tree-toggle").innerHTML=
+                    child.classList.contains("open")?"-":"+";
                 };
 
-            child.appendChild(item);
+                wrap.appendChild(head);
 
+                const tables=document.createElement("div");
+                tables.className="tree-section";
+                tables.innerHTML="Tables";
+                child.appendChild(tables);
+
+                if(db.tables){
+                    Object.keys(db.tables).forEach(t=>{
+                        totalTables++;
+                        const item=document.createElement("div");
+                        item.className="tree-table-item";
+                        if(currentTable===t){
+                            item.classList.add("active");
+                        }
+                        item.innerHTML=t;
+
+                        item.onclick=function(e){
+                            e.stopPropagation();
+                            currentDatabase=dbName;
+                            currentTable=t;
+                            document.getElementById("active-db-label").innerText=`Database Connected: ${dbName}`;
+                            persistEngineState();
+                            
+                            // Corrected to use editor.setValue for updating code text dynamically
+                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t};`);
+                            executeSQLQuery();
+                        };
+
+                        item.ondblclick=function(e){
+                            e.stopPropagation();
+                            currentDatabase=dbName;
+                            currentTable=t;
+                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t};`);
+                            executeSQLQuery();
+                        };
+
+                        child.appendChild(item);
+                    });
+                }
+
+                const views=document.createElement("div");
+                views.className="tree-section";
+                views.innerHTML="Views";
+                child.appendChild(views);
+
+                const procedures=document.createElement("div");
+                procedures.className="tree-section";
+                procedures.innerHTML="Procedures";
+                child.appendChild(procedures);
+
+                const functions=document.createElement("div");
+                functions.className="tree-section";
+                functions.innerHTML="Functions";
+                child.appendChild(functions);
+
+                wrap.appendChild(child);
+                sidebar.appendChild(wrap);
             });
-
-            }
-
-            const views=document.createElement("div");
-
-            views.className="tree-section";
-
-            views.innerHTML="Views";
-
-            child.appendChild(views);
-
-            const procedures=document.createElement("div");
-
-            procedures.className="tree-section";
-
-            procedures.innerHTML="Procedures";
-
-            child.appendChild(procedures);
-
-            const functions=document.createElement("div");
-
-            functions.className="tree-section";
-
-            functions.innerHTML="Functions";
-
-            child.appendChild(functions);
-
-            wrap.appendChild(child);
-
-            sidebar.appendChild(wrap);
-
-            });
-            updateStatusBar(
-
-            `Databases Loaded | Total Tables : ${totalTables}`
-
-            );
-
-            }
+            updateStatusBar(`Databases Loaded | Total Tables : ${totalTables}`);
+        }
 
         // Handle GUI sidebar selection clicks cleanly updating system state tracking configurations references 
         function selectDatabaseFromGUI(dbName) {
@@ -924,26 +796,12 @@ outline:none;
             
             container.appendChild(entry);
             requestAnimationFrame(()=>{
+                container.scrollTop=container.scrollHeight;
+            });
+        }
 
-        container.scrollTop=container.scrollHeight;
-
-        editor = CodeMirror.fromTextArea(
-        document.getElementById("query-textarea"),
-        {
-            mode:"text/x-mysql",
-            lineNumbers:true,
-            indentWithTabs:true,
-            smartIndent:true,
-            matchBrackets:true,
-            lineWrapping:true
-        } );
-
-        });
-    }
         function updateStatusBar(text){
-
             document.getElementById("status-bar").innerText=text;
-
         }
 
         // Tab selection click handler views tracking layouts toggler
@@ -964,23 +822,16 @@ outline:none;
 
         // Main parser/executor engine execution controller route tracking
         function executeSQLQuery() {
-
             const startTime = performance.now();
-
-            const rawInput = document.getElementById('query-textarea').value.trim();
+            
+            // Fixed: Read from CodeMirror editor instead of raw textarea element
+            const rawInput = editor.getValue().trim();
 
             if(rawInput!=""){
-
-                if(queryHistory.length===0 ||
-
-                queryHistory[queryHistory.length-1]!==rawInput){
-
+                if(queryHistory.length===0 || queryHistory[queryHistory.length-1]!==rawInput){
                     queryHistory.push(rawInput);
-
                 }
-
                 historyIndex=queryHistory.length;
-
             }
 
             if (!rawInput) {
@@ -988,42 +839,34 @@ outline:none;
                 return;
             }
 
-            // Split the input commands into separate individual statements to support multiple batch executions sequentially
-            // Splitting logic respects nested strings containing semicolons safely
             const queries = rawInput.split(/;(?=(?:[^']*'[^']*')*[^']*$)/).map(q => q.trim()).filter(q => q.length > 0);
             
             let lastResult = null;
             let executionErrorOccurred = false;
             let totalStatementsExecuted = 0;
 
-            // Loop and run all separate individual string statements through browser storage tracking references maps 
             for(let i = 0; i < queries.length; i++) {
                 let sqlStatement = queries[i];
                 
-                // Track if user explicitly requested switching targeted execution environments mapping rules via query console commands 
                 const useDbMatch = sqlStatement.match(/^USE\s+(\w+)/i);
                 if (useDbMatch) {
                     const targetDb = useDbMatch[1];
                     if (alasql.databases[targetDb]) {
                         currentDatabase = targetDb;
                         const tableMatch=sqlStatement.match(/from\s+([a-zA-Z0-9_]+)/i);
-
-                    if(tableMatch){
-
-                    currentTable=tableMatch[1];
-
-                    }
-                        currentTable="";
+                        if(tableMatch){
+                            currentTable=tableMatch[1];
+                        } else {
+                            currentTable="";
+                        }
                         document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
                     }
                 }
 
                 try {
-                    // Send instruction directly down down into running memory profile layout configuration map elements tracker arrays blocks
                     lastResult = alasql(sqlStatement);
                     totalStatementsExecuted++;
                     
-                    // Format message output log profiles feedback configurations elements mappings arrays values cleanly 
                     if (Array.isArray(lastResult)) {
                         logConsoleMessage(`Query SQL index [${totalStatementsExecuted}] ran successfully: Returned ${lastResult.length} record row entries.`, "success");
                     } else {
@@ -1032,23 +875,20 @@ outline:none;
                 } catch(error) {
                     logConsoleMessage(`Error running statement index [${i+1}] ("${sqlStatement.substring(0, 40)}..."): ${error.message}`, "error");
                     executionErrorOccurred = true;
-                    switchTab('log'); // Switch view immediately over into data processing messages console logging maps view so tester spots layout anomalies fast
+                    switchTab('log'); 
                     break; 
                 }
             }
 
-            // Sync structural modification outcomes directly to browser long-term persistence structures store caches updates
             persistEngineState();
             refreshSidebarGUI();
 
             if (!executionErrorOccurred) {
-                // If the last query run was a SELECT statement, display the results grid, otherwise show status 
                 const cleanLastQuery = queries[queries.length - 1].toLowerCase();
                 if(cleanLastQuery.includes('select') || cleanLastQuery.includes('show') || cleanLastQuery.includes('explain')) {
                     renderResultGrid(lastResult);
                     switchTab('grid');
                 } else {
-                    // Non-select mutation statements response confirmation feedback 
                     document.getElementById('grid-container').innerHTML = `
                         <div class="no-data" style="color: #2e7d32; font-weight: bold;">
                             ✅ Query execution tracking complete. All ${totalStatementsExecuted} statement batches finalized successfully.<br>
@@ -1059,24 +899,14 @@ outline:none;
             }
 
             const endTime = performance.now();
-
-            logConsoleMessage(
-                `Execution Time : ${(endTime - startTime).toFixed(2)} ms`,
-                "info"
-            );
+            logConsoleMessage(`Execution Time : ${(endTime - startTime).toFixed(2)} ms`, "info");
         }
 
         // Render dataset result objects tables inside UI output viewing target placeholder layout
         function renderResultGrid(dataArray) {
             const container = document.getElementById('grid-container');
             container.innerHTML=`
-                <div style="
-                padding:6px;
-                background:#eef7ff;
-                border-bottom:1px solid #ccc;
-                font-weight:bold;
-                color:#005ea6;
-                ">
+                <div style="padding:6px; background:#eef7ff; border-bottom:1px solid #ccc; font-weight:bold; color:#005ea6;">
                 Returned Rows : ${dataArray.length}
                 </div>
                 `;
@@ -1086,13 +916,10 @@ outline:none;
                 return;
             }
 
-            // Extract all keys present inside properties collections mapped to trace out correct column definitions 
             const columns = Object.keys(dataArray[0]);
-
             const table = document.createElement('table');
             table.className = 'grid-table';
 
-            // Generate header rows mapping track
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
             columns.forEach(colName => {
@@ -1103,7 +930,6 @@ outline:none;
             thead.appendChild(headerRow);
             table.appendChild(thead);
 
-            // Generate data records cell body layout loops mapping track
             const tbody = document.createElement('tbody');
             dataArray.forEach(rowDataObj => {
                 const tr = document.createElement('tr');
@@ -1111,7 +937,6 @@ outline:none;
                     const td = document.createElement('td');
                     let val = rowDataObj[colName];
                     
-                    // Pretty format empty values elements profiles configurations properties cleanly
                     if (val === null || val === undefined) {
                         td.innerHTML = '<span style="color: #aaa; font-style: italic;">NULL</span>';
                     } else {
@@ -1126,23 +951,8 @@ outline:none;
         }
     </script>
 
-    </script>
-
-        <div id="status-bar"
-        style="
-        height:24px;
-        background:#e8e8e8;
-        border-top:1px solid #bcbcbc;
-        display:flex;
-        align-items:center;
-        padding-left:10px;
-        font-size:12px;
-        color:#444;
-        ">
+    <div id="status-bar" style="height:24px; background:#e8e8e8; border-top:1px solid #bcbcbc; display:flex; align-items:center; padding-left:10px; font-size:12px; color:#444;">
         Ready
-        </div>
-
-        </body>
-        </html>
+    </div>
 </body>
 </html>
