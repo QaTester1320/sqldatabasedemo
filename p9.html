@@ -696,7 +696,7 @@
                 }
             });
 
-            const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query across your connected Customer, Product, Supplier, Order, and OrderItem records:\nSELECT \n    c.FirstName,\n    c.LastName,\n    c.City,\n    o.OrderNumber,\n    o.OrderDate,\n    oi.UnitPrice,\n    oi.Quantity,\n    p.ProductName,\n    s.CompanyName AS SupplierName\nFROM Customer c\nJOIN \"Order\" o ON c.Id = o.CustomerId\nJOIN OrderItem oi ON o.Id = oi.OrderId\nJOIN Product p ON oi.ProductId = p.Id\nJOIN Supplier s ON p.SupplierId = s.Id\nWHERE c.Country = 'Germany'\nORDER BY o.OrderDate DESC;";
+            const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query across your connected Customer, Product, Supplier, CustomerOrder, and OrderItem records:\nSELECT \n    c.FirstName,\n    c.LastName,\n    c.City,\n    o.OrderNumber,\n    o.OrderDate,\n    oi.UnitPrice,\n    oi.Quantity,\n    p.ProductName,\n    s.CompanyName AS SupplierName\nFROM Customer c\nJOIN \"CustomerOrder\" o ON c.Id = o.CustomerId\nJOIN OrderItem oi ON o.Id = oi.OrderId\nJOIN Product p ON oi.ProductId = p.Id\nJOIN Supplier s ON p.SupplierId = s.Id\nWHERE c.Country = 'Germany'\nORDER BY o.OrderDate DESC;";
             editor.setValue(defaultQuery);
 
             document.addEventListener("keydown", function(e) {
@@ -827,7 +827,7 @@
             alasql('CREATE TABLE Customer (Id INT PRIMARY KEY AUTO_INCREMENT, FirstName STRING, LastName STRING, City STRING, Country STRING, Phone STRING)');
             alasql('CREATE TABLE Supplier (Id INT PRIMARY KEY AUTO_INCREMENT, CompanyName STRING, ContactName STRING, ContactTitle STRING, City STRING, Country STRING, Phone STRING, Fax STRING)');
             alasql('CREATE TABLE Product (Id INT PRIMARY KEY AUTO_INCREMENT, ProductName STRING, SupplierId INT, UnitPrice DECIMAL, Package STRING, IsDiscontinued INT)');
-            alasql('CREATE TABLE Order (Id INT PRIMARY KEY AUTO_INCREMENT, OrderDate STRING, OrderNumber STRING, CustomerId INT, TotalAmount DECIMAL)');
+            alasql('CREATE TABLE CustomerOrder (Id INT PRIMARY KEY AUTO_INCREMENT, OrderDate STRING, OrderNumber STRING, CustomerId INT, TotalAmount DECIMAL)');
             alasql('CREATE TABLE OrderItem (Id INT PRIMARY KEY AUTO_INCREMENT, OrderId INT, ProductId INT, UnitPrice DECIMAL, Quantity INT)');
 
             const sampleCusts = [
@@ -884,7 +884,7 @@
                 [9,'2026-05-02','542386',9,215.35],
                 [10,'2026-05-15','542387',10,40.00]
             ];
-            sampleOrders.forEach(o => alasql('INSERT INTO "Order" VALUES (?,?,?,?,?)', o));
+            sampleOrders.forEach(o => alasql('INSERT INTO "CustomerOrder" VALUES (?,?,?,?,?)', o));
 
             const sampleItems = [
                 [1,1,1,18.00,10],
@@ -1098,14 +1098,14 @@
                             currentTable=t;
                             document.getElementById("active-db-label").innerText=`Database Connected: ${dbName}`;
                             persistEngineState();
-                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t === 'Order' ? '"Order"' : t};`);
+                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t === 'CustomerOrder' ? '"CustomerOrder"' : t};`);
                             executeSQLQuery();
                         };
                         item.ondblclick=function(e){
                             e.stopPropagation();
                             currentDatabase=dbName;
                             currentTable=t;
-                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t === 'Order' ? '"Order"' : t};`);
+                            editor.setValue(`USE ${dbName};\n\nSELECT * FROM ${t === 'CustomerOrder' ? '"CustomerOrder"' : t};`);
                             executeSQLQuery();
                         };
                         child.appendChild(item);
