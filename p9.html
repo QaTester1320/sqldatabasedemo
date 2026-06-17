@@ -827,7 +827,7 @@
             alasql('CREATE TABLE Customer (Id INT PRIMARY KEY AUTO_INCREMENT, FirstName STRING, LastName STRING, City STRING, Country STRING, Phone STRING)');
             alasql('CREATE TABLE Supplier (Id INT PRIMARY KEY AUTO_INCREMENT, CompanyName STRING, ContactName STRING, ContactTitle STRING, City STRING, Country STRING, Phone STRING, Fax STRING)');
             alasql('CREATE TABLE Product (Id INT PRIMARY KEY AUTO_INCREMENT, ProductName STRING, SupplierId INT, UnitPrice DECIMAL, Package STRING, IsDiscontinued INT)');
-            alasql('CREATE TABLE "Order" (Id INT PRIMARY KEY AUTO_INCREMENT, OrderDate STRING, OrderNumber STRING, CustomerId INT, TotalAmount DECIMAL)');
+            alasql('CREATE TABLE Order (Id INT PRIMARY KEY AUTO_INCREMENT, OrderDate STRING, OrderNumber STRING, CustomerId INT, TotalAmount DECIMAL)');
             alasql('CREATE TABLE OrderItem (Id INT PRIMARY KEY AUTO_INCREMENT, OrderId INT, ProductId INT, UnitPrice DECIMAL, Quantity INT)');
 
             const sampleCusts = [
