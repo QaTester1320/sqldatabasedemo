@@ -1070,16 +1070,15 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
                 if(dbName===currentDatabase){
                     child.classList.add("open");
                 }
-                head.onclick = function(){
-                    const matchingChild = this.nextElementSibling;
-                    matchingChild.classList.toggle("open");
-                    const toggleSpan = this.querySelector(".tree-toggle");
-                    if (matchingChild.classList.contains("open")) {
+               head.onclick = function(){
+                    child.classList.toggle("open");
+                    const toggleSpan = head.querySelector(".tree-toggle");
+                    if (child.classList.contains("open")) {
                         toggleSpan.innerHTML = "-";
-                        matchingChild.style.display = "block";
+                        child.style.setProperty("display", "block", "important");
                     } else {
                         toggleSpan.innerHTML = "+";
-                        matchingChild.style.display = "none";
+                        child.style.setProperty("display", "none", "important");
                     }
                 };
                 wrap.appendChild(head);
