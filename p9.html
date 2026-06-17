@@ -766,7 +766,7 @@
                     if(localStorage.getItem('mysql_sandbox_current_db')) {
                         currentDatabase = localStorage.getItem('mysql_sandbox_current_db');
                         if (alasql.databases[currentDatabase]) {
-                            alasql.useid = currentDatabase; // FIX: Assign tracking code ID directly to prevent sqlCache crash
+                            alasql.useid = currentDatabase; 
                             document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
                         } else {
                             currentDatabase = "retail_store_db";
@@ -822,7 +822,7 @@
             // NEW ACTIVE DATABASE 1: retail_store_db
             // ==========================================
             alasql('CREATE DATABASE retail_store_db');
-            alasql.useid = 'retail_store_db'; // FIX: Assign internal tracking variable safely
+            alasql.useid = 'retail_store_db'; 
 
             alasql('CREATE TABLE Customer (Id INT PRIMARY KEY AUTO_INCREMENT, FirstName STRING, LastName STRING, City STRING, Country STRING, Phone STRING)');
             alasql('CREATE TABLE Supplier (Id INT PRIMARY KEY AUTO_INCREMENT, CompanyName STRING, ContactName STRING, ContactTitle STRING, City STRING, Country STRING, Phone STRING, Fax STRING)');
@@ -855,7 +855,7 @@
                 [8,'Specialty Biscuits, Ltd.','Peter Wilson','Sales Manager','Manchester','UK','(161) 555-4448',null],
                 [9,'PB Knäckebröd AB','Lars Peterson','Sales Agent','Göteborg','Sweden','031-987654',null],
                 [10,'Refrescos Americanas LTDA','Carlos Diaz','Marketing Manager','Sao Paulo','Brazil','(11) 555 4640',null]
-            ]; // FIX: Changed string array inputs from uppercase text format NULL to valid JavaScript lowercase null parameters
+            ]; 
             sampleSups.forEach(s => alasql('INSERT INTO Supplier VALUES (?,?,?,?,?,?,?,?)', s));
 
             const sampleProds = [
@@ -1166,10 +1166,7 @@
 
         function executeSQLQuery() {
             if(!editor) return;
-            let queryStr = editor.getSelection().trim();
-            if(!queryStr) {
-                queryStr = editor.getValue().trim();
-            }
+            let queryStr = editor.getValue().trim();
             if(!queryStr) return;
 
             const startTime = performance.now();
@@ -1192,7 +1189,7 @@
                     const targetDb = useDbMatch[1];
                     if (alasql.databases[targetDb]) {
                         currentDatabase = targetDb;
-                        alasql.useid = targetDb; // FIX: Sync direct variable assignment alongside text evaluation strings loops
+                        alasql.useid = targetDb; 
                         const tableMatch=sqlStatement.match(/from\s+["']?([a-zA-Z0-9_]+)["']?/i);
                         if(tableMatch){
                             currentTable=tableMatch[1];
@@ -1376,7 +1373,7 @@
                             alasql.databases[dbName].tables = importedData[dbName].tables;
                             currentDatabase = dbName;
                         });
-                        alasql.useid = currentDatabase; // FIX: Fast assignment map tracking logic sync
+                        alasql.useid = currentDatabase; 
                         document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
                         logConsoleMessage(`[Import Engine] JSON structured configuration dump database loaded successfully into engine memory.`, "success");
                     } else if (nameLower.endsWith('.sql')) {
@@ -1512,10 +1509,6 @@
             } catch (err) {
                 logConsoleMessage(`[Snapshot Error]: ${err.message}`, "error");
             }
-        }
-
-        function closeQASnapshotModal() {
-            document.getElementById('qa-snapshot-modal').style.display = 'none';
         }
 
         function closeQASnapshotModal() {
