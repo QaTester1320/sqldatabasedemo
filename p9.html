@@ -750,8 +750,11 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
         });
 
         function initStorageEngine() {
-            if (!localStorage.getItem('mysql_sandbox_db_data')) {
+           if (!localStorage.getItem('mysql_sandbox_db_data')) {
                 loadPreloadedSampleDatasets();
+                currentDatabase = "retail_store_db";
+                alasql.useid = "retail_store_db";
+                persistEngineState();
             } else {
                 try {
                     const savedData = JSON.parse(localStorage.getItem('mysql_sandbox_db_data'));
@@ -1067,9 +1070,16 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
                 if(dbName===currentDatabase){
                     child.classList.add("open");
                 }
-                head.onclick=function(){
+                head.onclick = function(){
                     child.classList.toggle("open");
-                    head.querySelector(".tree-toggle").innerHTML= child.classList.contains("open")?"-":"+";
+                    const toggleSpan = head.querySelector(".tree-toggle");
+                    if (child.classList.contains("open")) {
+                        toggleSpan.innerHTML = "-";
+                        child.style.display = "block";
+                    } else {
+                        toggleSpan.innerHTML = "+";
+                        child.style.display = "none";
+                    }
                 };
                 wrap.appendChild(head);
                 const tables=document.createElement("div");
