@@ -884,7 +884,7 @@
                 [9,'2026-05-02','542386',9,215.35],
                 [10,'2026-05-15','542387',10,40.00]
             ];
-            sampleOrders.forEach(o => alasql('INSERT INTO "CustomerOrder" VALUES (?,?,?,?,?)', o));
+            sampleOrders.forEach(o => alasql('INSERT INTO CustomerOrder VALUES (?,?,?,?,?)', o));
 
             const sampleItems = [
                 [1,1,1,18.00,10],
