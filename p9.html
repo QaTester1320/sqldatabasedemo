@@ -1130,6 +1130,7 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
                 functions.className="tree-section";
                 functions.innerHTML="Functions";
                 child.appendChild(functions);
+                wrap.appendChild(child);
                 sidebar.appendChild(wrap);
             });
             document.getElementById('status-bar').innerText=`Ready | Schemas: ${Object.keys(alasql.databases).length - 1} | Total Tables Tracked: ${totalTables}`;
