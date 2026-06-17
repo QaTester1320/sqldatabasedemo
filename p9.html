@@ -1164,7 +1164,7 @@
             document.getElementById("grid-container").innerHTML = '<div class="no-data">Result view grid workspace cleared out. Execute a query string statement to populate table grid layout matrix.</div>';
         }
 
-        function executeSQLQuery() {
+       function executeSQLQuery() {
             if(!editor) return;
             let queryStr = editor.getValue().trim();
             if(!queryStr) return;
@@ -1199,6 +1199,12 @@
                         document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
                     }
                 }
+                
+                // Surgical Fix: Force alaSQL context to lock into the currently active database before executing statement row
+                if (currentDatabase && alasql.databases[currentDatabase]) {
+                    alasql.useid = currentDatabase;
+                }
+
                 try {
                     lastResult = alasql(sqlStatement);
                     totalStatementsExecuted++;
