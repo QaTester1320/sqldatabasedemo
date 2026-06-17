@@ -1087,7 +1087,7 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
                         let rowCountCountScalar = 0;
                         try {
                             if (dbName && alasql.databases[dbName] && alasql.databases[dbName].tables[t]) {
-                                rowCountCountScalar = alasql.databases[dbName].tables[t].data.length;
+                                rowCountCountScalar = (alasql.databases[dbName].tables[t] && alasql.databases[dbName].tables[t].data) ? alasql.databases[dbName].tables[t].data.length : 0;
                             }
                         } catch(e) {}
                         item.innerHTML = `${t} (${rowCountCountScalar})`;
@@ -1165,7 +1165,7 @@ const defaultQuery = "USE retail_store_db;\n\n-- Advanced multi-table JOIN query
 
        function executeSQLQuery() {
             if(!editor) return;
-            let queryStr = editor.getValue().trim();
+            let queryStr = editor.getSelection().trim() || editor.getValue().trim();
             if(!queryStr) return;
 
             const startTime = performance.now();
