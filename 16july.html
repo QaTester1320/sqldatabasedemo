@@ -6,7 +6,7 @@
     <title>MySQL Client GUI Sandbox</title>
     <script src="https://cdn.jsdelivr.net/npm/alasql@4.5.1/dist/alasql.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/min/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
@@ -28,7 +28,6 @@
             overflow: hidden;
         }
 
-        /* Top Navigation Header bar style typical of classic MySQL Workbench Client */
         header {
             background: linear-gradient(to bottom, #f6f6f6 0%, #e5e5e5 100%);
             border-bottom: 1px solid #bcbcbc;
@@ -93,14 +92,12 @@
             border-color: #962b2b;
         }
 
-        /* Main Workspace layout split into sidebar and console window */
         .workspace {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* Left side Tree Sidebar View */
         .sidebar {
             width: 260px;
             background-color: #ffffff;
@@ -215,7 +212,6 @@
             content:"📄 ";
         }
 
-        /* Right side main content splits up and down */
         .main-content {
             flex: 1;
             display: flex;
@@ -224,7 +220,6 @@
             background-color: #fcfcfc;
         }
 
-        /* Right Upper Editor Window */
         .editor-section {
             height: 40%;
             border-bottom: 4px solid #bcbcbc;
@@ -276,7 +271,6 @@
             outline:none;
         }
 
-        /* Custom styling for CodeMirror Auto-complete dropdown popup */
         .CodeMirror-hints {
             font-family: "Segoe UI", -apple-system, sans-serif;
             font-size: 12px;
@@ -297,7 +291,6 @@
             color: white;
         }
 
-        /* Right Bottom Result Window Grid/Output logs */
         .result-section {
             height: 60%;
             display: flex;
@@ -338,7 +331,6 @@
             display: block;
         }
 
-        /* Workbench Action Output Log Style */
         .console-log {
             font-family: "Segoe UI", -apple-system, sans-serif;
             font-size: 12px;
@@ -365,7 +357,6 @@
         .log-error { background-color: #fff8f8; color: #c62828; font-weight: bold; }
         .log-info { background-color: #f4f8ff; color: #1565c0; }
 
-        /* Classic Data Output Grid Style */
         .grid-table {
             border-collapse: collapse;
             width: 100%;
@@ -507,9 +498,7 @@
         let queryHistory=[];
         let historyIndex=-1;
 
-        // Custom Helper function to compile dynamic suggestion lists based on your standard tables and columns
         function getCustomSQLHints() {
-            // Baseline SQL keywords suggestions dictionary
             const keywords = [
                 "SELECT", "FROM", "WHERE", "JOIN", "ON", "AND", "OR", "ORDER BY", "GROUP BY", 
                 "INSERT", "INTO", "UPDATE", "SET", "DELETE", "CREATE DATABASE", "CREATE TABLE", 
@@ -517,30 +506,26 @@
                 "SHOW PROCEDURE STATUS"
             ];
             
-            // Comprehensive Data Types
             const dataTypes = [
                 "INT", "INTEGER", "VARCHAR", "VARCHAR(255)", "STRING", "DECIMAL", "NUMBER", "BOOLEAN", "DATE", "TEXT"
             ];
 
-            // Structural Constraints
             const constraints = [
                 "PRIMARY KEY", "NOT NULL", "FOREIGN KEY", "REFERENCES", "UNIQUE", "DEFAULT", "AUTO_INCREMENT"
             ];
             
             let hintsList = [...keywords, ...dataTypes, ...constraints];
 
-            // Safely iterate through active databases structures to inject dynamic metadata words maps
             if (typeof alasql !== 'undefined' && alasql.databases) {
                 Object.keys(alasql.databases).forEach(dbName => {
                     if (dbName === 'alasql') return;
-                    hintsList.push(dbName); // Add database name to suggestions
+                    hintsList.push(dbName);
 
                     const db = alasql.databases[dbName];
                     if (db && db.tables) {
                         Object.keys(db.tables).forEach(tableName => {
-                            hintsList.push(tableName); // Add table name to suggestions
+                            hintsList.push(tableName);
                             
-                            // Extract column schema properties definitions to suggest columns dynamically
                             const tableObj = db.tables[tableName];
                             if (tableObj && tableObj.columns) {
                                 tableObj.columns.forEach(col => {
@@ -556,12 +541,10 @@
             return hintsList;
         }
 
-        // Core initialization sequence setup
         window.addEventListener('DOMContentLoaded', () => {
             initStorageEngine();
             refreshSidebarGUI();
             
-            // Register CodeMirror configuration once here
             editor = CodeMirror.fromTextArea(document.getElementById("query-textarea"), {
                 mode: "text/x-mysql",
                 lineNumbers: true,
@@ -571,7 +554,6 @@
                 lineWrapping: true,
                 extraKeys: {
                     "Tab": function(cm) {
-                        // Accept suggestion when hint is open, otherwise insert standard indent spaces
                         if (cm.state.completionActive) {
                             cm.state.completionActive.pick();
                         } else {
@@ -583,9 +565,7 @@
                 }
             });
 
-            // Live Auto-Suggest as the user types text
             editor.on("inputRead", function(cm, changeObj) {
-                // Trigger overlay container block if text characters are input
                 if (changeObj.origin === "+input" && changeObj.text[0].trim() !== "" && changeObj.text[0] !== ";") {
                     cm.showHint({
                         completeSingle: false,
@@ -599,7 +579,6 @@
 
                             const fullSuggestionPool = getCustomSQLHints();
                             
-                            // Filter keywords and meta properties matches
                             const matchedResults = fullSuggestionPool.filter(item => 
                                 item.toLowerCase().startsWith(typedWord.toLowerCase())
                             );
@@ -614,7 +593,6 @@
                 }
             });
 
-            // Set initial helpful query hint text block inside screen view area with unique table aliases
             const defaultQuery = "USE ecommerce_db;\n\n-- Example Interconnected Join query across multiple preloaded tables:\nSELECT \n    usr.username, \n    usr.email, \n    ord.id AS order_id, \n    ord.order_date, \n    ord.total_amount,\n    prod.name AS item_purchased\nFROM users usr\nJOIN orders ord ON usr.id = ord.user_id\nJOIN order_items ori ON ord.id = ori.order_id\nJOIN products prod ON ori.product_id = prod.id\nWHERE usr.status = 'active'\nORDER BY ord.total_amount DESC;";
             editor.setValue(defaultQuery);
 
@@ -626,12 +604,10 @@
             });
 
             editor.on("keydown", function(cm, e) {
-                // If autocomplete is active, let CodeMirror's built-in acceptHint handle it!
                 if (cm.state.completionActive) {
                     return; 
                 }
 
-                // Normal behavior when autocomplete box is closed
                 if (e.ctrlKey && e.key === "Enter") {
                     e.preventDefault();
                     executeSQLQuery();
@@ -657,29 +633,22 @@
                 }
             });
 
-            // ====================================================
-            // CROSS-DOCUMENT MESSAGE LISTENER (FRONTEND CONNECTION)
-            // ====================================================
             window.addEventListener("message", function(event) {
-                // Intercept payload signatures sent by your separate storefront sandboxes
                 if (event.data && event.data.action === "EXECUTE_FROM_FRONTEND") {
                     const receivedSQL = event.data.query;
                     if (!receivedSQL || !receivedSQL.trim()) return;
 
                     logConsoleMessage(`[Incoming Remote Command]: Received data request sequence from external storefront workspace tab.`, "info");
                     
-                    // Inject the programmatic incoming script query string into the CodeMirror viewport
                     if (editor) {
                         editor.setValue(receivedSQL);
                     }
 
-                    // Directly execute query strings in the current engine layout instance
                     executeSQLQuery();
                 }
             });
         });
 
-        // Initialize local dataset states or load existing data records maps out of LocalStorage
         function initStorageEngine() {
             if (!localStorage.getItem('mysql_sandbox_db_data')) {
                 loadPreloadedSampleDatasets();
@@ -709,7 +678,6 @@
             }
         }
 
-        // Save current structural state map directly into browser local persistent memory records cache layout
         function persistEngineState() {
             const structuresDump = {};
             for (let dbName in alasql.databases) {
@@ -721,13 +689,11 @@
             localStorage.setItem('mysql_sandbox_db_data', JSON.stringify(structuresDump));
             localStorage.setItem('mysql_sandbox_current_db', currentDatabase);
             
-            // Sync Table options for seeder utility
             if (currentDatabase && alasql.databases[currentDatabase] && alasql.databases[currentDatabase].tables) {
                 updateQASeederDropdownOptions(Object.keys(alasql.databases[currentDatabase].tables));
             }
         }
 
-        // Drop current structures completely out of tracking configurations and reset sample data tables structures
         function resetDatabaseSchema() {
             if(confirm("Are you sure you want to reset all databases, tables, and records to original 10-record preloaded state? All custom modifications will be lost.")) {
                 localStorage.removeItem('mysql_sandbox_db_data');
@@ -743,7 +709,6 @@
             }
         }
 
-        // Generate baseline functional entities profiles map and sync structure trees
         function loadPreloadedSampleDatasets() {
             alasql.databases = { alasql: alasql.databases.alasql };
 
@@ -870,7 +835,6 @@
             persistEngineState();
         }
 
-        // GUI Navigation Tree Builders updates dynamic schema arrays loops
         function refreshSidebarGUI(){
             let totalTables=0;
             const sidebar=document.getElementById("sidebar-tree");
@@ -970,23 +934,8 @@
                 wrap.appendChild(child);
                 sidebar.appendChild(wrap);
             });
-            updateStatusBar(`Databases Loaded | Total Tables : ${totalTables}`);
         }
 
-        function selectDatabaseFromGUI(dbName) {
-            try {
-                alasql(`USE ${dbName}`);
-                currentDatabase = dbName;
-                document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
-                refreshSidebarGUI();
-                logConsoleMessage(`Switched database tracking reference target to: ${dbName}`, "info");
-                persistEngineState();
-            } catch(e) {
-                logConsoleMessage(`Error switching to database context ${dbName}: ${e.message}`, "error");
-            }
-        }
-
-        // Global query console output append logging function matching MySQL Workbench design parameters
         function logConsoleMessage(message, type = "success") {
             const container = document.getElementById('log-container');
             if(!container) return;
@@ -1004,11 +953,6 @@
             requestAnimationFrame(()=>{
                 container.scrollTop=container.scrollHeight;
             });
-        }
-
-        function updateStatusBar(text){
-            const bar = document.getElementById("status-bar");
-            if(bar) bar.innerText=text;
         }
 
         function switchTab(tabType) {
@@ -1029,7 +973,6 @@
         function executeSQLQuery() {
             const startTime = performance.now();
             
-            // Highlighted selection inspector matching real-world SQL Workbench clients
             let rawInput = editor.getSelection().trim();
             if (!rawInput) {
                 rawInput = editor.getValue().trim();
@@ -1047,63 +990,58 @@
                 return;
             }
 
-            // =======================================================
-            // SMART INTERCEPTOR PATCH FOR SHOW PROCEDURE STATUS COMMAND
-            // =======================================================
-            const checkQueryClean = rawInput.trim().toLowerCase().replace(/\s+/g, ' ');
-            if (checkQueryClean.startsWith("show procedure status")) {
-                totalStatementsExecuted = 1;
-                let mockProcArray = [];
-                
-                // Fetch dynamic functions currently registered into memory stack
-                let registeredFunctionsList = (typeof alasql !== 'undefined' && alasql.fn) ? Object.keys(alasql.fn) : [];
-                
-                // Add mock default structural records matching HR/Company profiles requirements schema matrix
-                if (!registeredFunctionsList.includes("calculate_bonus")) registeredFunctionsList.push("calculate_bonus");
-                if (!registeredFunctionsList.includes("verify_emp_status")) registeredFunctionsList.push("verify_emp_status");
-                
-                // Intercept database targeting filters string blocks logic
-                let targetDbName = "hr"; 
-                const dbFilterMatch = checkQueryClean.match(/where\s+db\s*=\s*'([^']+)'/i);
-                if (dbFilterMatch && dbFilterMatch[1]) {
-                    targetDbName = dbFilterMatch[1];
-                }
-                
-                registeredFunctionsList.forEach(procName => {
-                    mockProcArray.push({
-                        "Db": targetDbName,
-                        "Name": procName,
-                        "Type": "PROCEDURE",
-                        "Definer": "root@localhost",
-                        "Modified": "2026-05-12 10:00:00",
-                        "Created": "2026-05-12 10:00:00",
-                        "Security_type": "DEFINER",
-                        "Comment": "QA Testing Reference Procedure Component Stack",
-                        "character_set_client": "utf8mb4",
-                        "collation_connection": "utf8mb4_general_ci",
-                        "Database Collation": "utf8mb4_general_ci"
-                    });
-                });
-
-                logConsoleMessage(`Statement SQL index [1] completed successfully via smart sandbox interceptor engine emulation stack.`, "success");
-                renderResultGrid(mockProcArray);
-                switchTab('grid');
-                
-                const endTime = performance.now();
-                logConsoleMessage(`Execution Time : ${(endTime - startTime).toFixed(2)} ms`, "info");
-                return; // Return immediately to prevent processing syntax down the standard pipeline lines
-            }
-            // =======================================================
-
             const queries = rawInput.split(/;(?=(?:[^']*'[^']*')*[^']*$)/).map(q => q.trim()).filter(q => q.length > 0);
             
             let lastResult = null;
             let executionErrorOccurred = false;
             let totalStatementsExecuted = 0;
+            let isInterceptedQuery = false;
 
             for(let i = 0; i < queries.length; i++) {
                 let sqlStatement = queries[i];
                 
+                // ==========================================================
+                // FIX: LOOP-LEVEL SMART INTERCEPTOR FOR INSIDE INDIVIDUAL INDEX CHECKS
+                // ==========================================================
+                const stmtClean = sqlStatement.trim().toLowerCase().replace(/\s+/g, ' ');
+                if (stmtClean.startsWith("show procedure status")) {
+                    totalStatementsExecuted++;
+                    isInterceptedQuery = true;
+                    
+                    let mockProcArray = [];
+                    let registeredFunctionsList = (typeof alasql !== 'undefined' && alasql.fn) ? Object.keys(alasql.fn) : [];
+                    
+                    if (!registeredFunctionsList.includes("calculate_bonus")) registeredFunctionsList.push("calculate_bonus");
+                    if (!registeredFunctionsList.includes("verify_emp_status")) registeredFunctionsList.push("verify_emp_status");
+                    
+                    let targetDbName = "hr"; 
+                    const dbFilterMatch = stmtClean.match(/where\s+db\s*=\s*'([^']+)'/i);
+                    if (dbFilterMatch && dbFilterMatch[1]) {
+                        targetDbName = dbFilterMatch[1];
+                    }
+                    
+                    registeredFunctionsList.forEach(procName => {
+                        mockProcArray.push({
+                            "Db": targetDbName,
+                            "Name": procName,
+                            "Type": "PROCEDURE",
+                            "Definer": "root@localhost",
+                            "Modified": "2026-05-12 10:00:00",
+                            "Created": "2026-05-12 10:00:00",
+                            "Security_type": "DEFINER",
+                            "Comment": "QA Testing Reference Procedure Component Stack",
+                            "character_set_client": "utf8mb4",
+                            "collation_connection": "utf8mb4_general_ci",
+                            "Database Collation": "utf8mb4_general_ci"
+                        });
+                    });
+
+                    logConsoleMessage(`Statement SQL index [${totalStatementsExecuted}] completed successfully via loop interceptor stack.`, "success");
+                    lastResult = mockProcArray;
+                    continue; // Skip standard AlaSQL pipeline execution for this statement completely
+                }
+                // ==========================================================
+
                 const useDbMatch = sqlStatement.match(/^USE\s+(\w+)/i);
                 if (useDbMatch) {
                     const targetDb = useDbMatch[1];
@@ -1141,14 +1079,13 @@
 
             if (!executionErrorOccurred) {
                 const cleanLastQuery = queries[queries.length - 1].toLowerCase();
-                if(cleanLastQuery.includes('select') || cleanLastQuery.includes('show') || cleanLastQuery.includes('explain')) {
-                    
-                    // SOLUTION: If AlaSQL returns a raw string text statement, wrap it nicely for the grid renderer
+                
+                // If it's our intercepted procedure display or a standard SELECT/SHOW, render the dataset matrix
+                if(isInterceptedQuery || cleanLastQuery.includes('select') || cleanLastQuery.includes('show') || cleanLastQuery.includes('explain')) {
                     let normalizedResult = lastResult;
                     if (typeof lastResult === 'string') {
                         normalizedResult = [{ "Create Table Statement": lastResult }];
                     }
-                    
                     renderResultGrid(normalizedResult);
                     switchTab('grid');
                 } else {
@@ -1225,7 +1162,6 @@
             container.appendChild(table);
         }
 
-        // Function 1: Export all schemas, tables, and rows of the CURRENT database
         function exportCurrentDatabase() {
             if (!currentDatabase) {
                 logConsoleMessage("Export failed: No active database selected. Use 'USE db_name' first.", "error");
@@ -1233,7 +1169,6 @@
                 return;
             }
 
-            // Capture the structure of only the active database
             const dbDump = {};
             if (alasql.databases[currentDatabase]) {
                 dbDump[currentDatabase] = {
@@ -1241,10 +1176,7 @@
                 };
             }
 
-            // Convert data to JSON string format
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbDump, null, 2));
-            
-            // Create a temporary link element to trigger the download download
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `sandbox_backup_${currentDatabase}.json`);
@@ -1255,12 +1187,10 @@
             logConsoleMessage(`Database '${currentDatabase}' successfully exported to a JSON dump file.`, "success");
         }
 
-        // Function 2: Open file explorer prompt safely when clicking the styled button
         function triggerImportSelection() {
             document.getElementById('import-file-input').click();
         }
 
-        // Function 3: Parse and load the uploaded JSON file data structure into AlaSQL
         function importSpecificDatabase(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1270,26 +1200,21 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     
-                    // Loop through keys to find database structure blocks
                     Object.keys(importedData).forEach(dbName => {
                         if (dbName === 'alasql') return;
 
-                        // Safely drop database if it exists to clean overwrite cleanly
                         if (alasql.databases[dbName]) {
                             alasql(`DROP DATABASE ${dbName}`);
                         }
                         
-                        // Create clean instance entry context mapping
                         alasql(`CREATE DATABASE ${dbName}`);
                         alasql.databases[dbName].tables = importedData[dbName].tables;
                         
-                        // Automatically activate and target the newly imported schema
                         currentDatabase = dbName;
                         alasql(`USE ${currentDatabase}`);
                         document.getElementById('active-db-label').innerText = `Database Connected: ${currentDatabase}`;
                     });
 
-                    // Sync visual states, save tracking memory, and update layout trees
                     persistEngineState();
                     refreshSidebarGUI();
                     switchTab('log');
@@ -1301,15 +1226,10 @@
                     logConsoleMessage(`Import Failure: Invalid or corrupt JSON backup matrix format. ${err.message}`, "error");
                     alert("Failed to parse file. Ensure it is a valid database export JSON file.");
                 }
-                // Clear input element value cache context so same file name can be uploaded sequentially
                 event.target.value = '';
             };
             reader.readAsText(file);
         }
-
-        // ==========================================
-        // ADVANCED QA PLAYGROUND TOOLS FUNCTIONS CORE
-        // ==========================================
 
         function updateQASeederDropdownOptions(availableTables) {
             const dropdown = document.getElementById('qa-seeder-table-select');
@@ -1459,7 +1379,6 @@
             const expected = parseInt(inputVal, 10);
             let currentCount = 0;
             
-            // Look up count parameters via standard validation checks
             const gridTable = document.querySelector('.grid-table tbody');
             if (gridTable) {
                 currentCount = gridTable.querySelectorAll('tr').length;
@@ -1520,7 +1439,6 @@
             const gridTable = document.querySelector('.grid-table');
             if (!gridTable) { alert("No visible dataset available inside grids parameters view context to export."); return; }
             
-            // Safely parse row nodes contents straight out from active grid presentation views
             const keys = [];
             gridTable.querySelectorAll('thead th').forEach(th => keys.push(th.innerText));
             const dataCollected = [];
